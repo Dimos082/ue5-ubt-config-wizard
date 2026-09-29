@@ -3,6 +3,8 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from ue5_ubt_config_wizard import discovery, runner
 
 
@@ -44,7 +46,15 @@ def test_preset_requires_real_engine_files(tmp_path: Path, monkeypatch) -> None:
     assert args[1] == "GameEditor"
     assert cwd == tmp_path
     assert runner.default_command(tmp_path / "Engine", project) is not None
-    assert (
-        tmp_path / "Engine" / "Saved" / "UnrealBuildTool" / "BuildConfiguration.xml"
-        in discovery.candidate_profiles(tmp_path / "Engine")
-    )
+
+
+@pytest.mark.parametrize("platform", ["win32", "darwin", "linux"])
+def test_engine_profile_candidate_follows_documented_platform_paths(
+    tmp_path: Path, monkeypatch, platform: str
+) -> None:
+    monkeypatch.setattr(discovery.sys, "platform", platform)
+    monkeypatch.setattr(discovery.Path, "home", lambda: tmp_path)
+    engine_path = tmp_path / "Engine"
+    candidate = engine_path / "Saved" / "UnrealBuildTool" / "BuildConfiguration.xml"
+    paths = discovery.candidate_profiles(engine_path)
+    assert (candidate in paths) == (platform == "win32")
