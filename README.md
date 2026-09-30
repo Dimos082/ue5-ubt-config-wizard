@@ -1,16 +1,63 @@
 # UE5 UBT Configuration Wizard
 
-A local desktop editor for UnrealBuildTool's `BuildConfiguration.xml` on Windows, macOS and Linux. Open one file, change settings, review the XML diff and save with a backup.
+**Understand, edit, and undo Unreal Engine C++ build-setting changes without hand-editing XML.**
 
-![Profile editor in the light color scheme](docs/screenshot.png)
+Adjusting an Unreal C++ build often means finding `BuildConfiguration.xml`, looking up unfamiliar settings, and editing the file by hand. When you are investigating build resource usage, trying a different executor, or changing unity-build behavior, you also need to keep track of what changed and how to restore the previous configuration.
 
-[Night mode preview](docs/night-mode.png)
+UE5 UBT Configuration Wizard brings that work into one desktop interface. Open a profile, inspect its settings, read available explanations with links to the source, and add or remove values. Review the XML diff before saving; the app backs up an existing file before replacing it. You can then run a local build command and inspect its output.
 
-## Use it
+Built for **UE5 C++ developers, plugin authors, and build engineers** working with UnrealBuildTool XML profiles. Available for Windows, macOS, and Linux.
 
-For a portable release, download the archive for your operating system from [Releases](https://github.com/Dimos082/ue5-ubt-config-wizard/releases), extract the **whole folder**, then run the application. These builds are unsigned.
+[Download the app](https://github.com/Dimos082/ue5-ubt-config-wizard/releases) · [Usage guide](docs/usage.md) · [Report a problem](https://github.com/Dimos082/ue5-ubt-config-wizard/issues)
 
-To run from source with Python 3.12 or 3.13, use PowerShell on Windows:
+![A loaded XML profile with its settings and editing controls](docs/screenshot.png)
+
+## When is it useful?
+
+| What you want to investigate | How the wizard helps |
+| --- | --- |
+| The build runs too many actions at once | Find and edit concurrency settings such as `MaxParallelActions`, then test the change on your machine. |
+| You need to inspect UBA or another build executor's configuration | See the flags present in the profile, read their explanations, and review exactly what you changed. |
+| You want to compare unity-build behavior while developing C++ code | Edit settings such as `bUseUnityBuild`, save a separate profile copy, and restore the previous file when needed. |
+
+These are investigation workflows, not automatic tuning presets. The best values depend on your engine, project, hardware, and toolchain. Setting semantics are documented in [Epic's Build Configuration reference](https://dev.epicgames.com/documentation/unreal-engine/build-configuration-for-unreal-engine).
+
+## Try it
+
+Download a portable archive from [Releases](https://github.com/Dimos082/ue5-ubt-config-wizard/releases):
+
+| Your computer | Archive name contains |
+| --- | --- |
+| Windows, Intel or AMD 64-bit | `windows-amd64.zip` |
+| Linux x64, built on Ubuntu | `linux-x86_64.tar.gz` |
+| macOS, Apple Silicon | `darwin-arm64.tar.gz` |
+
+Extract the **whole folder**, then launch `ue5-ubt-config-wizard.exe` on Windows or `ue5-ubt-config-wizard` on macOS/Linux. Keep the executable and its supporting files together. Portable builds include their Python runtime; a separate Python installation is not required. Builds are unsigned, and the macOS build is not notarized.
+
+1. Open a suggested XML file, browse to another, or create a new profile.
+2. Select a setting to read its description and source. Double-click to edit, or use **+ Add setting** to search the catalog.
+3. Choose **Review changes**, then **Save changes**. An existing destination gets a backup before replacement.
+4. Optionally use **Tools → Run build check** to run a command against the saved configuration and inspect its output.
+
+Use **File** to save a copy, back up, or restore a profile. **View → Night mode** switches to the [dark theme](docs/night-mode.png).
+
+## Scope and compatibility
+
+The app edits one `BuildConfiguration.xml` at a time. It helps you make and review configuration changes; it does not automatically diagnose build failures, benchmark improvements, or choose optimal settings.
+
+It does not edit `Build.cs`, `Target.cs`, or INI files, and it does not provide a game-packaging workflow. Unreal's Development, DebugGame, and Shipping configurations are separate concepts; see [Epic's build configurations guide](https://dev.epicgames.com/documentation/unreal-engine/build-configurations-reference-for-unreal-engine).
+
+The bundled catalog has **551 documented category/name candidates**, **139 reviewed explanations**, and **20 reviewed scalar value types**, based on Epic's UE 5.8 documentation. Candidates with unverified types remain clearly marked and accept raw text. Unknown or nested XML content is retained; the editor changes direct scalar settings.
+
+An available local engine schema can check XML structure. It does not establish all setting behavior, and a successful build command does not prove which profile UBT loaded. Consult the build log and the documentation for your exact engine version. [Compatibility details](docs/supported-engines.md) · [Catalog sources and review process](docs/catalog-provenance.md).
+
+Profile editing works offline. A build command you choose to run may use network services or other local tools.
+
+## Run from source
+
+With Python **3.12 or 3.13**, run these commands from a clone or extracted source directory.
+
+Windows PowerShell:
 
 ```powershell
 py -3.13 -m venv .venv
@@ -18,7 +65,7 @@ py -3.13 -m venv .venv
 .\.venv\Scripts\python.exe -m ue5_ubt_config_wizard
 ```
 
-On macOS or Linux:
+macOS/Linux, using Python 3.12 or 3.13:
 
 ```bash
 python3 -m venv .venv
@@ -26,17 +73,13 @@ python3 -m venv .venv
 .venv/bin/python -m ue5_ubt_config_wizard
 ```
 
-1. Open a suggested XML file, browse to another, or create a new profile.
-2. Select a setting to read its description and source. Double-click to edit, or use **+ Add setting** to search all catalog entries.
-3. Click **Review changes**, then **Save changes**. An existing file is backed up before replacement.
+## Help improve it
 
-Use **File** for Save a copy, Backup and Restore; **View → Night mode** for the dark theme; and **Tools** for optional engine/project selection and a local build check. The build-check command field is always editable and runs only when you click **Run command**.
+The most useful contributions are **engine-version compatibility reports**, corrections to setting descriptions with source links, and reproducible bugs. Open an [issue](https://github.com/Dimos082/ue5-ubt-config-wizard/issues) with your engine version, OS, affected setting, and expected versus observed behavior. Remove private paths, server addresses, and credentials from shared profiles or logs.
 
-## Catalog and limits
+See [CONTRIBUTING.md](CONTRIBUTING.md). If the tool helps your workflow, a star helps other developers discover it.
 
-The bundled catalog contains 551 category/name candidates from [Epic's UE 5.8 Build Configuration page](https://dev.epicgames.com/documentation/unreal-engine/build-configuration-for-unreal-engine). It includes 139 reviewed explanations, of which 20 also have reviewed scalar value types. The other 412 candidates remain clearly marked as needing review. Settings without a confirmed type can be entered as **unverified raw text**; support and valid values depend on your engine version. A matching local schema can catch some invalid XML, but a successful build does not prove which profile UnrealBuildTool used. Unknown XML content is preserved. The app does not need Internet access to edit a profile.
-
-## Test and publish
+The [CI workflow](https://github.com/Dimos082/ue5-ubt-config-wizard/actions/workflows/ci.yml) runs application tests on Windows, macOS, and Linux with Python 3.12/3.13. These checks are separate from testing against a real Unreal Engine installation.
 
 ```bash
 python -m pip install -c requirements-dev.lock -e ".[dev]"
@@ -45,4 +88,6 @@ python -m ruff format --check .
 python -m pytest
 ```
 
-[CI](https://github.com/Dimos082/ue5-ubt-config-wizard/actions/workflows/ci.yml) tests pushes and pull requests on Windows, macOS and Linux. See [manual GitHub setup](docs/manual-github-setup.md) and [release instructions](docs/releasing.md) for owner-run commands. The project uses the proposed [Apache-2.0 license](LICENSE); review it before public distribution.
+[Maintainer release guide](docs/releasing.md) · [Manual GitHub setup](docs/manual-github-setup.md)
+
+[Apache-2.0 license](LICENSE). Bundled dependencies have their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
